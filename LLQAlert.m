@@ -14,50 +14,33 @@
 }
 @property(nonatomic, retain)NSMutableArray* queue;			// FIFO
 @property(nonatomic, retain)NSMutableArray* delegateQueue;	// FIFO
-- (void)popQueue;
-- (void)addDataInQueue:(id)data withDelegate:(id<UIAlertViewDelegate>)delegate;
 @end
 
 @implementation LLQAlert
 @synthesize queue			= _queue,
 			delegateQueue	= _delegateQueue;
 
-- (void)addAlertMessageFromQueue:(NSString*)message{
-	[self addAlertMessageFromQueue: message withDelegate: nil];
+#pragma mark ----------------------------------------------- public --------------------------------------------------------
+#pragma mark ---------------------------------------------------------------------------------------------------------------
+
+- (void)alert:(NSString*)message{
+	[self alert: message withDelegate: nil];
 }
 
-- (void)addAlertMessageFromQueue:(NSString*)message withDelegate:(id<UIAlertViewDelegate>)delegate{
-	[self addDataInQueue: message withDelegate: delegate];
+- (void)alert:(NSString*)message withDelegate:(id<UIAlertViewDelegate>)delegate{
+	[self qeue: message withDelegate: delegate];
 	[self popQueue];
 }
 
-- (void)addAlertFromQueue:(UIAlertView*)alert withDelegate:(id<UIAlertViewDelegate>)delegate{
-	[self addDataInQueue: alert withDelegate: delegate];
+- (void)customAlert:(UIAlertView*)alert withDelegate:(id<UIAlertViewDelegate>)delegate{
+	[self qeue: alert withDelegate: delegate];
 	[self popQueue];
 }
 
-#pragma mark - getter setter
+#pragma mark - Getter / Setter
 
 - (UIAlertView*)currentAlert{
 	return [_queue lastObject];
-}
-
-#pragma mark - UIAlertDelegate
-
-// note, only simple callBack done
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-	id<UIAlertViewDelegate> delegate = [_delegateQueue objectAtIndex: 0];
-	
-	if([delegate respondsToSelector: @selector(alertView:clickedButtonAtIndex:)])
-		[delegate alertView: alertView clickedButtonAtIndex: buttonIndex];
-}
-
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
-	[_queue				removeObjectAtIndex: 0];
-	[_delegateQueue		removeObjectAtIndex: 0];
-	_isDisplaying = NO;
-	[self popQueue];
 }
 
 #pragma mark - syngleton Method
@@ -77,7 +60,26 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(LLQAlert)
 #pragma mark ----------------------------------------------- private -------------------------------------------------------
 #pragma mark ---------------------------------------------------------------------------------------------------------------
 
-- (void)addDataInQueue:(id)data withDelegate:(id<UIAlertViewDelegate>)delegate{
+#pragma mark - UIAlertDelegate
+
+// Note: only simple delegate callBack done. Will add them later
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+	id<UIAlertViewDelegate> delegate = [_delegateQueue objectAtIndex: 0];
+	
+	if([delegate respondsToSelector: @selector(alertView:clickedButtonAtIndex:)])
+		[delegate alertView: alertView clickedButtonAtIndex: buttonIndex];
+}
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
+	[_queue				removeObjectAtIndex: 0];
+	[_delegateQueue		removeObjectAtIndex: 0];
+	_isDisplaying = NO;
+	[self popQueue];
+}
+
+#pragma mark - logic
+
+- (void)qeue:(id)data withDelegate:(id<UIAlertViewDelegate>)delegate{
 	[_queue			addObject: data];
 	[_delegateQueue addObject: delegate? delegate : (id)[NSNull null]];
 }
@@ -87,9 +89,13 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(LLQAlert)
 		id unqueued = [_queue objectAtIndex: 0];
 		UIAlertView* alert;
 		
-		if([unqueued isKindOfClass: [NSString class]]){
-			alert	= [[[UIAlertView alloc] initWithTitle:nil message: [_queue objectAtIndex: 0] delegate: self cancelButtonTitle: @"ok" otherButtonTitles: nil] autorelease];
-		}
+		if([unqueued isKindOfClass: [NSString class]])
+			alert	= [[[UIAlertView alloc] initWithTitle: nil
+												message: [_queue objectAtIndex: 0]
+											   delegate: self
+									  cancelButtonTitle: @"ok" // need customisation
+									  otherButtonTitles: nil] autorelease];
+		
 		else {
 			alert				= unqueued;
 			alert.delegate		= self;

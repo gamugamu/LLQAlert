@@ -1,19 +1,28 @@
 //
-//  MSSimpleAlert.h
-//  PTMobileStart
-//
-//  Created by kiabimobile on 20/02/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  LLQAlert.h
+//  Created by Loïc abadie on 20/02/12.
 //
 
 #import <Foundation/Foundation.h>
 
-// Cette classe permet de lancer une alerte tout simple, sans callBack. Utiliser MSSimpleAlert pour lancer rapidement des alertes.
-// MSSimpleAlert se charge aussi de ne lancer les alertes qu'en pile. Une alerte à la fois.
+/* Throw alerts in queue. Alerts are never over-popped by another alerts. FIFO orders */
+// TODO: block support - delegate full implementation - custom alert.
+
 @interface LLQAlert : NSObject
+
+/// Singleton instance
 + (LLQAlert*)sharedLLQAlert;
-- (void)addAlertMessageFromQueue:(NSString*)message;
-- (void)addAlertMessageFromQueue:(NSString*)message withDelegate:(id<UIAlertViewDelegate>)delegate;
-- (void)addAlertFromQueue:(UIAlertView*)alert withDelegate:(id<UIAlertViewDelegate>)delegate;
+
+/// Send a basic alert text. No title, "ok" button default.
+- (void)alert:(NSString*)message;
+
+/// Same as alert: but you have a basic delegate callback when alert is dismissed.
+- (void)alert:(NSString*)message withDelegate:(id<UIAlertViewDelegate>)delegate;
+
+/// Use your own NSAlert for custom implementation.
+- (void)customAlert:(UIAlertView*)alert withDelegate:(id<UIAlertViewDelegate>)delegate;
+
+/// Current displayed alert.
 - (UIAlertView*)currentAlert;
+
 @end
