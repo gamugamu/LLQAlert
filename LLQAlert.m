@@ -2,8 +2,7 @@
 //  MSSimpleAlert.m
 //  PTMobileStart
 //
-//  Created by kiabimobile on 20/02/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Created by Loïc Abadie on 20/02/12.
 //
 
 #import "LLQAlert.h"
@@ -12,13 +11,14 @@
 @interface LLQAlert()<UIAlertViewDelegate>{
 	BOOL _isDisplaying;
 }
-@property(nonatomic, retain)NSMutableArray* queue;			// FIFO
-@property(nonatomic, retain)NSMutableArray* delegateQueue;	// FIFO
+
+@property(nonatomic, retain)NSMutableArray* delegateQueue;      // FIFO
+@property(nonatomic, retain)NSMutableArray* queue;              // FIFO
 @end
 
 @implementation LLQAlert
-@synthesize queue			= _queue,
-			delegateQueue	= _delegateQueue;
+@synthesize queue           = _queue,
+            delegateQueue   = _delegateQueue;
 
 #pragma mark ----------------------------------------------- public --------------------------------------------------------
 #pragma mark ---------------------------------------------------------------------------------------------------------------
@@ -51,8 +51,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(LLQAlert)
 
 - (id)init{
 	if(self = [super init]){
-		self.queue		= [NSMutableArray arrayWithCapacity: 2];
-		_delegateQueue	= [_queue mutableCopy];
+		self.queue      = [NSMutableArray arrayWithCapacity: 2];
+		_delegateQueue  = [_queue mutableCopy];
 	}
 	return self;
 }
@@ -71,8 +71,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(LLQAlert)
 }
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
-	[_queue				removeObjectAtIndex: 0];
-	[_delegateQueue		removeObjectAtIndex: 0];
+	[_queue removeObjectAtIndex: 0];
+	[_delegateQueue removeObjectAtIndex: 0];
 	_isDisplaying = NO;
 	[self popQueue];
 }
@@ -80,7 +80,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(LLQAlert)
 #pragma mark - logic
 
 - (void)qeue:(id)data withDelegate:(id<UIAlertViewDelegate>)delegate{
-	[_queue			addObject: data];
+	[_queue addObject: data];
 	[_delegateQueue addObject: delegate? delegate : (id)[NSNull null]];
 }
 
@@ -91,14 +91,14 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(LLQAlert)
 		
 		if([unqueued isKindOfClass: [NSString class]])
 			alert	= [[[UIAlertView alloc] initWithTitle: nil
-												message: [_queue objectAtIndex: 0]
-											   delegate: self
-									  cancelButtonTitle: @"ok" // need customisation
-									  otherButtonTitles: nil] autorelease];
+                                                message: [_queue objectAtIndex: 0]
+                                               delegate: self
+                                      cancelButtonTitle: @"ok" // need customisation
+                                      otherButtonTitles: nil] autorelease];
 		
 		else {
-			alert				= unqueued;
-			alert.delegate		= self;
+			alert           = unqueued;
+			alert.delegate  = self;
 		}
 		
 		[alert show];
